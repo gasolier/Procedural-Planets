@@ -1,4 +1,6 @@
-var p5 = new p5();
+function map(x, s1, e1, s2, e2) {
+    return (x - s1) * (e2 - s2) / (e1 - s1) + s2;
+}
 
 function hexToRgb (hexString) {
     return {
@@ -8,27 +10,35 @@ function hexToRgb (hexString) {
     }
 }
 
-function generatePerlinNumber (x, y, width, height, offset) {
+function generatePerlinNumber (x, y, width, height, x1, x2, y1, y2, offset, generator) {
     let s = x / width;
     let t = y / height;
+    let dx = x2 - x1;
+    let dy = y2 - y1;
 
-    let nx = Math.cos(s * 2 * Math.PI) * Math.sin(t * 2 * Math.PI) + offset;
-    let ny = Math.sin(s * 2 * Math.PI) * Math.sin(t * 2 * Math.PI) + offset;
-    let nz = Math.cos(t * 2 * Math.PI) + offset;
+    let pi = Math.PI;
 
-    return p5.noise(nx, ny, nz);
+    let nx = x1 + Math.cos(s * 2 * pi) * dx / (2 * pi);
+    let ny = y1 + Math.cos(t * 2 * pi) * dy / (2 * pi);
+    let nz = x1 + Math.sin(s * 2 * pi) * dx / (2 * pi);
+    let nw = y1 + Math.sin(t * 2 * pi) * dy / (2 * pi);
+
+    let val = generator.noise4D(nx + offset, ny + offset, nz + offset, nw + offset);
+
+    return map(val, -1, 1, 0, 1);
 }
 
 function generatePerlinNoise (width, height) {
-    p5.noiseSeed(Math.floor(Math.random() * 10000));
+    let simplex = new SimplexNoise(Math.random());
+
     let returnGrid = new Array();
 
     for (let y = 0; y < height; y++) {
         let col = new Array();
         for (let x = 0; x < width; x++) {
-            let elevation = generatePerlinNumber(x, y, width, height, 0) * 100;
-            let precipitation = generatePerlinNumber(x, y, width, height, 100) * 500;
-            let temperature = generatePerlinNumber(x, y, width, height, -100) * 50;
+            let elevation = generatePerlinNumber(x, y, width, height, -1, 1, -1, 1, 100, simplex) * 100;
+            let precipitation = generatePerlinNumber(x, y, width, height, -1, 1, -1, 1, 1000, simplex) * 500;
+            let temperature = generatePerlinNumber(x, y, width, height, -1, 1, -1, 1, -1000, simplex) * 50;
 
             col.push({
                 elevation : elevation,
@@ -38,6 +48,8 @@ function generatePerlinNoise (width, height) {
         }
         returnGrid.push(col);
     }
+
+    console.log(returnGrid);
 
     return returnGrid;
 }
@@ -50,12 +62,7 @@ function getColour (x, y, backgroundGrid) {
     let temperature = backgroundGrid[y][x].temperature;
 
     if (elevation < 30) {
-        if (temperature < 5) {
-            // tundra
-            returnColour = hexToRgb("#93a9ad");
-        } else {
-            returnColour = hexToRgb("#00546b");
-        }
+        returnColour = hexToRgb("#00546b");
     } else {
         if (temperature < 10) {
             if (precipitation < 100) {
