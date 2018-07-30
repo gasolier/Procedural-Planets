@@ -1,0 +1,37 @@
+* { 
+    overflow-x: hidden;
+}
+
+#universe-holder {
+    position: fixed;
+    
+    width: 50%;
+    height: 100%;
+}
+
+#text-content {
+    position: absolute;
+
+    padding-left: 1%;
+    
+    width: 49%;
+    left: 50%;
+
+    height: 100%;
+
+    border-left: 2px solid grey;
+}
+
+ul {
+    margin-left: 1%;
+    list-style-position: inside;
+}
+
+body { 
+    margin: 0; 
+}
+
+canvas { 
+    width: 100%; 
+    height: 100%;
+}
